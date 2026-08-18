@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VITALERA — Pulih, Tumbuh, Berdaya.</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        vital: {
+                            50: '#f1f9f5', 100: '#e2f2e9', 200: '#c5e5d3', 300: '#98d0b0',
+                            400: '#62b78d', 500: '#3c9b70', 600: '#25805a', 700: '#1c684a',
+                            800: '#19533d', 900: '#164536'
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                        jakarta: ['Plus Jakarta Sans', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; background: #f4f7f5; color: #14231f; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #c7d8d0; border-radius: 20px; }
+
+        .app-layout {
+            width: 100%; min-height: 100vh; margin: 0 auto;
+            background: #ffffff; position: relative; overflow-x: hidden;
+        }
+
+        @media (min-width: 1024px) {
+            body { padding: 0; background: #f0f4f2; }
+            .app-layout {
+                max-width: 1280px; min-height: 100vh;
+                display: grid; grid-template-columns: 260px 1fr;
+                box-shadow: 0 0 50px rgba(0,0,0,0.05);
+            }
+            .desktop-sidebar { display: flex !important; }
+            .mobile-bottom-nav { display: none !important; }
+            .mobile-header-menu { display: none !important; }
+            .main-content { padding-left: 2rem; padding-right: 2rem; }
+        }
+
+        .page { display: none; animation: fadeIn .25s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .mood-button { transition: all .2s ease; }
+        .mood-button.selected { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(35, 100, 72, .13); border-color: #74b994; }
+
+        .progress-line { height: 8px; border-radius: 999px; background: #e7eee9; overflow: hidden; }
+        .progress-line > div { height: 100%; border-radius: inherit; background: #31906a; transition: width .4s ease; }
+
+        .chat-message { animation: messageIn .2s ease; }
+        @keyframes messageIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
+        .nav-item.active { color: #146746; font-weight: 700; }
+        .nav-item.active .nav-icon { background: #e3f2e9; color: #1c684a; }
+
+        .sidebar-item.active { background-color: #e2f2e9; color: #19533d; font-weight: 700; }
+
+        .chart-line { fill: none; stroke: #48a77c; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+        .chart-dot { fill: #48a77c; }
+
+        .hide-scrollbar { scrollbar-width: none; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+
+        .quiz-scale-btn {
+            width: 38px; height: 38px; border-radius: 999px; border: 1.5px solid #e2e8e4;
+            font-size: 13px; font-weight: 700; color: #6b7a73; background: #fff; transition: all .15s ease;
+        }
+        .quiz-scale-btn.selected { background: #1c684a; border-color: #1c684a; color: #fff; transform: scale(1.08); }
+        .quiz-question.answered { border-color: #bfe0cd; background: #f8fdfa; }
+
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .animate-pulse-slow { animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+        /* ==== VITA LEARN: material card & modal tambahan ==== */
+        .material-card { transition: transform .15s ease, box-shadow .15s ease; }
+        .material-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(20,60,45,.08); }
+        .lm-section-title { font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+        #learn-modal-body::-webkit-scrollbar { width: 5px; }
+        .no-result-box { display: none; }
+    </style>
+</head>
+
+<body>
+
+<svg style="display:none">
+    <symbol id="vitalera-logo" viewBox="0 0 200 200">
+        <path d="M40 70C55 55 72 48 92 46C90 66 78 82 58 90C48 84 42 78 40 70Z" fill="#8EC3AA"/>
+        <path d="M28 95C42 84 58 80 76 82C71 100 58 113 40 116C31 111 27 103 28 95Z" fill="#A4CCB8"/>
+        <path d="M24 122C36 114 50 112 64 116C58 130 47 139 32 140C25 136 22 129 24 122Z" fill="#C4DFD1"/>
+        <path d="M160 70C145 55 128 48 108 46C110 66 122 82 142 90C152 84 158 78 160 70Z" fill="#8EC3AA"/>
+        <path d="M172 95C158 84 142 80 124 82C129 100 142 113 160 116C169 111 173 103 172 95Z" fill="#A4CCB8"/>
+        <path d="M176 122C164 114 150 112 136 116C142 130 153 139 168 140C175 136 178 129 176 122Z" fill="#C4DFD1"/>
+        <path d="M55 68C68 100 90 150 100 180C110 150 132 100 145 68" stroke="#6FB8DF" stroke-width="13" fill="none" stroke-linecap="round"/>
+        <circle cx="100" cy="42" r="14" fill="#F4B942"/>
+        <path d="M68 78C80 92 92 108 100 128C108 108 120 92 132 78" stroke="#1c684a" stroke-width="11" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="100" cy="76" r="12" fill="#1c684a"/>
+        <path d="M100 118c-3-4-9-4-10.5 0.3c-1.6 4.3 1 8.2 10.5 15.2c9.5-7 12.1-10.9 10.5-15.2c-1.5-4.3-7.5-4.3-10.5-0.3z" fill="#ffffff"/>
+    </symbol>
+</svg>
+
+<!-- MODAL BIODATA (TAMPIL PERTAMA KALI) -->
+<div id="welcome-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 lg:p-8 shadow-2xl relative">
+        <div class="text-center">
+            <svg class="w-16 h-16 mx-auto mb-2" viewBox="0 0 200 200"><use href="#vitalera-logo"/></svg>
+            <h2 class="text-2xl font-bold text-vital-800">Selamat Datang!</h2>
+            <p class="text-xs text-gray-500 mt-1">Mari perkenalkan diri dulu agar VITALERA bisa mengenalmu lebih baik.</p>
+        </div>
+
+        <form id="onboarding-form" onsubmit="saveProfile(event)" class="mt-6 space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Nama Lengkap / Panggilan</label>
+                <input id="user-name-input" type="text" required placeholder="Contoh: Dzulfaiq" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-vital-400">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Usia (Tahun)</label>
+                    <input id="user-age-input" type="number" min="10" max="100" required placeholder="17" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs outline-none focus:ring-2 focus:ring-vital-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Jenis Kelamin</label>
+                    <select id="user-gender-input" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs outline-none focus:ring-2 focus:ring-vital-400 text-gray-700">
+                        <option value="Laki-laki">Laki-laki</option>
+                        <option value="Perempuan">Perempuan</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-gray-700 mb-1">Status Saat Ini</label>
+                <select id="user-status-input" required class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-xs outline-none focus:ring-2 focus:ring-vital-400 text-gray-700">
+                    <option value="Pelajar / Mahasiswa">Pelajar / Mahasiswa</option>
+                    <option value="Pekerja">Pekerja</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+            </div>
+
+            <button type="submit" class="w-full mt-4 bg-vital-700 text-white font-bold py-3 rounded-xl text-xs hover:bg-vital-800 transition shadow-md shadow-vital-700/20">
+                Mulai Perjalanan Ruang Pulih →
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL MATERI (VITA LEARN) -->
+<div id="material-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl relative max-h-[85vh] flex flex-col">
+        <div class="flex items-start justify-between p-6 pb-4 border-b border-gray-100">
+            <div class="pr-6">
+                <span id="modal-material-badge" class="inline-block text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full mb-2"></span>
+                <h3 id="modal-material-title" class="text-lg font-bold text-vital-800"></h3>
+                <p id="modal-material-time" class="text-[11px] text-gray-400 mt-1"></p>
+            </div>
+            <button onclick="closeMaterialModal()" class="text-gray-400 hover:text-gray-600 flex-shrink-0">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+        <div id="learn-modal-body" class="p-6 pt-4 overflow-y-auto text-xs text-gray-600 leading-relaxed space-y-4"></div>
+        <div class="p-6 pt-3 border-t border-gray-100">
+            <button onclick="closeMaterialModal()" class="w-full bg-vital-700 text-white rounded-xl py-2.5 text-xs font-semibold hover:bg-vital-800 transition">Tutup Materinya</button>
+        </div>
+    </div>
+</div>
+
+<div class="app-layout">
+
+    <!-- DESKTOP SIDEBAR -->
+    <aside class="desktop-sidebar hidden flex-col justify-between border-r border-gray-100 p-6 bg-white sticky top-0 h-screen">
+        <div>
+            <div class="flex items-center gap-3 pb-8 border-b border-gray-100">
+                <svg class="w-12 h-12" viewBox="0 0 200 200"><use href="#vitalera-logo"/></svg>
+                <div>
+                    <div class="font-extrabold text-xl tracking-tight text-vital-800">VITALERA</div>
+                    <div class="text-[10px] text-gray-500">Pulih, Tumbuh, Berdaya.</div>
+                </div>
+            </div>
+
+            <nav class="mt-8 space-y-2">
+                <button onclick="navigate('home')" id="s-nav-home" class="sidebar-item active w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-gray-600 hover:bg-vital-50 transition">
+                    <i data-lucide="house" class="w-5 h-5"></i> Beranda
+                </button>
+                <button onclick="navigate('check')" id="s-nav-check" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-gray-600 hover:bg-vital-50 transition">
+                    <i data-lucide="heart-pulse" class="w-5 h-5"></i> Vita Check
+                </button>
+                <button onclick="navigate('buddy')" id="s-nav-buddy" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-gray-600 hover:bg-vital-50 transition">
+                    <i data-lucide="bot" class="w-5 h-5"></i> Vita Buddy
+                </button>
+                <button onclick="navigate('learn')" id="s-nav-learn" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-gray-600 hover:bg-vital-50 transition">
+                    <i data-lucide="book-open" class="w-5 h-5"></i> Vita Learn
+                </button>
+                <button onclick="navigate('care')" id="s-nav-care" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-gray-600 hover:bg-vital-50 transition">
+                    <i data-lucide="cross" class="w-5 h-5"></i> Vita Care
+                </button>
+                <button onclick="navigate('community')" id="s-nav-community" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-gray-600 hover:bg-vital-50 transition">
+                    <i data-lucide="users-round" class="w-5 h-5"></i> Vita Community
+                </button>
+                <button onclick="navigate('card')" id="s-nav-card" class="sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-gray-600 hover:bg-vital-50 transition">
+                    <i data-lucide="chart-no-axes-combined" class="w-5 h-5"></i> Vita Card
+                </button>
+            </nav>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-vital-50 border border-vital-100">
+            <div class="text-xs font-bold text-vital-800">Status Kesehatan</div>
+            <div class="text-[11px] text-vital-600 mt-1">Stabil (Aktivitas Aktif)</div>
+        </div>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <div class="flex flex-col min-h-screen">
+
+        <!-- HEADER -->
+        <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-gray-100">
+            <div class="h-[78px] px-5 lg:px-8 flex items-center justify-between">
+                <button onclick="navigate('home')" class="lg:hidden flex items-center gap-3 text-left">
+                    <svg class="w-10 h-10" viewBox="0 0 200 200"><use href="#vitalera-logo"/></svg>
+                    <div>
+                        <div class="font-extrabold text-lg tracking-tight text-vital-800">VITALERA</div>
+                    </div>
+                </button>
+                <div class="hidden lg:block font-bold text-gray-700 text-lg">Dashboard Pengguna</div>
+                <div class="flex items-center gap-3">
+                    <button aria-label="Notifikasi" class="relative w-10 h-10 rounded-full flex items-center justify-center text-vital-800 hover:bg-vital-50 transition">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                        <span class="absolute top-[7px] right-[8px] w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content pb-28 lg:pb-12 pt-6">
+
+            <!-- PAGE HOME -->
+            <section id="page-home" class="page active">
+                <div class="px-5 lg:px-0">
+                    <div class="relative pt-2 pb-5">
+                        <h1 class="text-2xl lg:text-3xl font-bold tracking-tight text-[#14231f]">Hai, <span id="display-name">Teman</span> <span class="inline-block">👋</span></h1>
+                        <p class="mt-1 text-sm lg:text-base text-gray-600">Bagaimana perasaanmu hari ini?</p>
+                    </div>
+
+                    <div class="grid grid-cols-5 gap-2 lg:gap-4 mt-2">
+                        <button class="mood-button rounded-2xl border border-transparent p-2 lg:p-4 text-center bg-white shadow-sm" onclick="selectMood(this, 'Sangat Baik', 95)">
+                            <div class="w-12 h-12 lg:w-14 lg:h-14 mx-auto rounded-2xl bg-[#e3f2eb] flex items-center justify-center"><i data-lucide="laugh" class="w-7 h-7 text-[#146746]"></i></div>
+                            <div class="text-[11px] lg:text-xs mt-2 font-medium text-gray-700">Sangat Baik</div>
+                        </button>
+                        <button class="mood-button rounded-2xl border border-transparent p-2 lg:p-4 text-center bg-white shadow-sm" onclick="selectMood(this, 'Baik', 85)">
+                            <div class="w-12 h-12 lg:w-14 lg:h-14 mx-auto rounded-2xl bg-[#e6f3ed] flex items-center justify-center"><i data-lucide="smile" class="w-7 h-7 text-[#187455]"></i></div>
+                            <div class="text-[11px] lg:text-xs mt-2 font-medium text-gray-700">Baik</div>
+                        </button>
+                        <button class="mood-button rounded-2xl border border-transparent p-2 lg:p-4 text-center bg-white shadow-sm" onclick="selectMood(this, 'Biasa Aja', 72)">
+                            <div class="w-12 h-12 lg:w-14 lg:h-14 mx-auto rounded-2xl bg-[#fff3cf] flex items-center justify-center"><i data-lucide="meh" class="w-7 h-7 text-[#26333a]"></i></div>
+                            <div class="text-[11px] lg:text-xs mt-2 font-medium text-gray-700">Biasa Aja</div>
+                        </button>
+                        <button class="mood-button rounded-2xl border border-transparent p-2 lg:p-4 text-center bg-white shadow-sm" onclick="selectMood(this, 'Buruk', 48)">
+                            <div class="w-12 h-12 lg:w-14 lg:h-14 mx-auto rounded-2xl bg-[#ffe5d7] flex items-center justify-center"><i data-lucide="frown" class="w-7 h-7 text-[#26333a]"></i></div>
+                            <div class="text-[11px] lg:text-xs mt-2 font-medium text-gray-700">Buruk</div>
+                        </button>
+                        <button class="mood-button rounded-2xl border border-transparent p-2 lg:p-4 text-center bg-white shadow-sm" onclick="selectMood(this, 'Sangat Buruk', 25)">
+                            <div class="w-12 h-12 lg:w-14 lg:h-14 mx-auto rounded-2xl bg-[#ffdfe2] flex items-center justify-center"><i data-lucide="frown" class="w-7 h-7 text-[#26333a]"></i></div>
+                            <div class="text-[11px] lg:text-xs mt-2 font-medium text-gray-700">Sangat Buruk</div>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                        <div class="lg:col-span-2 rounded-2xl border border-gray-100 shadow-sm p-6 bg-white">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <h2 class="font-semibold text-lg text-[#1b2c27]">Skor Mood Hari Ini</h2>
+                                    <div class="mt-4 flex items-end gap-2">
+                                        <span id="mood-score" class="text-5xl font-bold leading-none text-vital-800">72</span>
+                                        <span class="text-gray-500 mb-1">/ 100</span>
+                                    </div>
+                                    <div class="mt-4 flex items-center gap-2 text-amber-500 text-sm">
+                                        <i data-lucide="triangle-alert" class="w-4 h-4"></i>
+                                        <span id="mood-risk">Risiko Sedang</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-col justify-between">
+                                    <svg viewBox="0 0 220 110" class="w-full h-[110px]">
+                                        <line x1="5" y1="96" x2="215" y2="96" stroke="#eef2ef"/>
+                                        <polyline points="10,80 48,80 82,48 116,57 151,23 184,31 213,8" class="chart-line"/>
+                                        <circle cx="10" cy="80" r="4" class="chart-dot"/><circle cx="48" cy="80" r="4" class="chart-dot"/>
+                                        <circle cx="82" cy="48" r="4" class="chart-dot"/><circle cx="116" cy="57" r="4" class="chart-dot"/>
+                                        <circle cx="151" cy="23" r="4" class="chart-dot"/><circle cx="184" cy="31" r="4" class="chart-dot"/>
+                                        <circle cx="213" cy="8" r="4" class="chart-dot"/>
+                                    </svg>
+                                    <button onclick="navigate('check')" class="w-full mt-2 rounded-xl bg-[#e3f1e8] text-vital-800 py-2.5 font-semibold text-sm hover:bg-vital-200 transition">
+                                        Lihat Detail <i data-lucide="chevron-right" class="inline-block w-4 h-4 align-middle"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="rounded-2xl border border-gray-100 shadow-sm p-6 bg-white flex flex-col justify-between">
+                            <div>
+                                <h2 class="font-bold text-lg text-vital-800">Bantuan Pintar</h2>
+                                <p class="text-xs text-gray-500 mt-1">Butuh kawan cerita cepat? Vita Buddy AI siap merespons.</p>
+                            </div>
+                            <button onclick="navigate('buddy')" class="w-full mt-6 bg-vital-700 text-white rounded-xl py-3 font-semibold text-xs flex items-center justify-center gap-2 hover:bg-vital-800 transition">
+                                <i data-lucide="bot" class="w-4 h-4"></i> Minta Saran Vita Buddy
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-8">
+                        <h2 class="font-bold text-xl text-gray-800">Akses Cepat</h2>
+                        <div class="grid grid-cols-3 gap-3 mt-4">
+                            <button onclick="navigate('check')" class="text-center p-3 rounded-2xl bg-white border border-gray-100 hover:shadow-sm transition">
+                                <div class="w-12 h-12 mx-auto rounded-2xl bg-[#dcefe7] flex items-center justify-center text-vital-700"><i data-lucide="heart-pulse" class="w-6 h-6"></i></div>
+                                <div class="text-xs mt-2 font-medium">Vita Check</div>
+                            </button>
+                            <button onclick="navigate('learn')" class="text-center p-3 rounded-2xl bg-white border border-gray-100 hover:shadow-sm transition">
+                                <div class="w-12 h-12 mx-auto rounded-2xl bg-[#e1f0f9] flex items-center justify-center text-[#1476a8]"><i data-lucide="book-open" class="w-6 h-6"></i></div>
+                                <div class="text-xs mt-2 font-medium">Vita Learn</div>
+                            </button>
+                            <button onclick="navigate('buddy')" class="text-center p-3 rounded-2xl bg-white border border-gray-100 hover:shadow-sm transition">
+                                <div class="w-12 h-12 mx-auto rounded-2xl bg-[#e3edf5] flex items-center justify-center text-[#16719d]"><i data-lucide="bot" class="w-6 h-6"></i></div>
+                                <div class="text-xs mt-2 font-medium">Vita Buddy</div>
+                            </button>
+                            <button onclick="navigate('care')" class="text-center p-3 rounded-2xl bg-white border border-gray-100 hover:shadow-sm transition">
+                                <div class="w-12 h-12 mx-auto rounded-2xl bg-[#ffe5e5] flex items-center justify-center text-red-500"><i data-lucide="cross" class="w-6 h-6"></i></div>
+                                <div class="text-xs mt-2 font-medium">Vita Care</div>
+                            </button>
+                            <button onclick="navigate('community')" class="text-center p-3 rounded-2xl bg-white border border-gray-100 hover:shadow-sm transition">
+                                <div class="w-12 h-12 mx-auto rounded-2xl bg-[#fde8f3] flex items-center justify-center text-pink-500"><i data-lucide="users-round" class="w-6 h-6"></i></div>
+                                <div class="text-xs mt-2 font-medium">Community</div>
+                            </button>
+                            <button onclick="navigate('card')" class="text-center p-3 rounded-2xl bg-white border border-gray-100 hover:shadow-sm transition">
+                                <div class="w-12 h-12 mx-auto rounded-2xl bg-[#ebe7fb] flex items-center justify-center text-indigo-600"><i data-lucide="chart-no-axes-combined" class="w-6 h-6"></i></div>
+                                <div class="text-xs mt-2 font-medium">Vita Card</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE VITA CHECK -->
+            <section id="page-check" class="page">
+                <div class="px-5 lg:px-0">
+                    <h1 class="text-2xl lg:text-3xl font-bold">Vita Check</h1>
+                    <p class="mt-1 text-sm text-gray-600">Ruang refleksi untuk membantu kamu memahami kondisi diri hari ini.</p>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                        <div class="lg:col-span-2 rounded-2xl border border-gray-100 p-6 bg-white">
+                            <div class="flex items-center gap-2"><i data-lucide="clipboard-list" class="w-5 h-5 text-vital-700"></i><h2 class="font-bold text-lg">Kuesioner Refleksi Emosi</h2></div>
+                            <p class="text-xs text-gray-500 mt-1">Jawab 8 pertanyaan berikut sejujur-jujurnya sesuai kondisimu belakangan ini.</p>
+                            <div id="quiz-container" class="mt-6 space-y-4"></div>
+                            <button id="quiz-submit-btn" onclick="calculateQuiz()" class="w-full mt-6 bg-vital-700 text-white rounded-xl py-3 font-semibold text-sm hover:bg-vital-800 transition">Lihat Hasil Refleksi</button>
+                            <p id="quiz-warning" class="text-xs text-red-500 mt-2 hidden">Lengkapi semua pertanyaan di atas ya ✨</p>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="rounded-2xl border border-gray-100 p-6 bg-white">
+                                <h2 class="font-bold">Skor Refleksi Hari Ini</h2>
+                                <div class="flex items-end gap-2 mt-4">
+                                    <span id="check-score" class="text-5xl font-bold text-vital-800">72</span><span class="text-gray-500 mb-1">/100</span>
+                                </div>
+                                <div class="progress-line mt-5"><div id="check-progress" style="width:72%"></div></div>
+                                <div id="check-risk-row" class="mt-4 flex items-center gap-2 text-amber-500 text-sm">
+                                    <i data-lucide="triangle-alert" class="w-4 h-4"></i><span id="check-risk">Risiko Sedang</span>
+                                </div>
+                            </div>
+
+                            <div id="crisis-box" class="rounded-2xl bg-red-50 border border-red-200 p-5 hidden">
+                                <div class="flex gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-white text-red-500 flex items-center justify-center flex-shrink-0"><i data-lucide="heart-handshake" class="w-5 h-5"></i></div>
+                                    <div>
+                                        <h3 class="font-bold text-red-700 text-sm">Kamu tidak sendirian</h3>
+                                        <p class="text-xs text-gray-700 mt-1">Jika butuh bantuan segera, hubungi layanan darurat kesehatan mental terpercaya.</p>
+                                    </div>
+                                </div>
+                                <button onclick="navigate('care')" class="w-full mt-4 bg-red-600 text-white rounded-xl py-2.5 font-semibold text-xs hover:bg-red-700 transition">Buka Vita Care</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE VITA LEARN -->
+            <section id="page-learn" class="page">
+                <div class="px-5 lg:px-0">
+                    <h1 class="text-2xl lg:text-3xl font-bold">Vita Learn</h1>
+                    <p class="mt-1 text-sm text-gray-600">50 materi GenRe untuk belajar, memahami diri, dan tumbuh bersama. Semua materi dapat dibuka bebas oleh siapa saja.</p>
+
+                    <div class="flex flex-col md:flex-row gap-4 mt-6 items-center justify-between">
+                        <div class="relative w-full md:w-80">
+                            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                            <input id="learn-search" type="text" placeholder="Cari materi (mis: HIV, stres, gizi)..." oninput="filterMaterials()" class="w-full bg-white border border-gray-200 rounded-xl py-2.5 pl-10 pr-4 text-xs outline-none focus:ring-2 focus:ring-vital-100">
+                        </div>
+                        <div class="text-[11px] text-gray-400 whitespace-nowrap"><span id="learn-count">50</span> materi tersedia</div>
+                    </div>
+
+                    <div id="learn-categories" class="flex gap-2 overflow-x-auto hide-scrollbar w-full mt-4 pb-1"></div>
+
+                    <div id="materials" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6"></div>
+
+                    <div id="no-result-box" class="no-result-box flex-col items-center justify-center text-center py-16">
+                        <i data-lucide="search-x" class="w-10 h-10 text-gray-300 mb-3"></i>
+                        <p class="text-sm font-semibold text-gray-500">Materi tidak ditemukan</p>
+                        <p class="text-xs text-gray-400 mt-1">Coba kata kunci atau kategori lain.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE VITA BUDDY -->
+            <section id="page-buddy" class="page">
+                <div class="px-5 lg:px-0">
+                    <div class="bg-white border border-gray-100 rounded-2xl p-4 lg:p-6 shadow-sm flex flex-col h-[75vh]">
+                        <!-- Chat Header -->
+                        <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-vital-100 text-vital-700 flex items-center justify-center relative">
+                                    <i data-lucide="bot" class="w-5 h-5"></i>
+                                    <span class="absolute bottom-0 right-0 w-3 h-3 bg-vital-500 border-2 border-white rounded-full"></span>
+                                </div>
+                                <div>
+                                    <h2 class="font-bold text-sm text-gray-800 flex items-center gap-2">
+                                        Vita Buddy
+                                        <span class="bg-vital-100 text-vital-700 text-[10px] font-bold px-2 py-0.5 rounded-full">Online</span>
+                                    </h2>
+                                    <p class="text-[11px] text-gray-400">Jawaban otomatis berbasis 50 materi GenRe di Vita Learn</p>
+                                </div>
+                            </div>
+                            <button onclick="resetChat()" title="Reset Percakapan" class="p-2 text-gray-400 hover:text-gray-600 rounded-xl hover:bg-gray-50">
+                                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+
+                        <!-- Chat Messages Container -->
+                        <div id="chat-messages" class="flex-1 overflow-y-auto py-4 space-y-4 pr-1">
+                            <!-- Welcome Bot Message -->
+                            <div class="chat-message flex gap-3 max-w-[85%]">
+                                <div class="w-8 h-8 rounded-full bg-vital-100 text-vital-700 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="bot" class="w-4 h-4"></i>
+                                </div>
+                                <div class="bg-vital-50 border border-vital-100 text-gray-700 rounded-2xl rounded-tl-none p-3.5 text-xs leading-relaxed shadow-sm">
+                                    Halo! Aku Vita Buddy. Tanya aja seputar topik GenRe — misalnya NAPZA, HIV/AIDS, pubertas, stres, atau pernikahan dini — nanti aku bantu jelaskan berdasarkan materi di Vita Learn. 😊
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chip Topik Cepat -->
+                        <div id="chat-suggestion-chips" class="flex gap-2 overflow-x-auto hide-scrollbar mb-3 pb-1"></div>
+
+                        <!-- Chat Input Box -->
+                        <div class="pt-3 border-t border-gray-100 flex items-center gap-2">
+                            <input id="chat-input" type="text" placeholder="Contoh: apa itu NAPZA?" onkeypress="handleChatKeyPress(event)" class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-xs outline-none focus:ring-2 focus:ring-vital-400">
+                            <button onclick="sendMessage()" class="bg-vital-700 text-white rounded-xl p-3 hover:bg-vital-800 transition flex items-center justify-center">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE VITA CARE -->
+            <section id="page-care" class="page">
+                <div class="px-5 lg:px-0">
+                    <h1 class="text-2xl lg:text-3xl font-bold">Vita Care</h1>
+                    <p class="mt-1 text-sm text-gray-600">Layanan bantuan darurat dan konsultasi profesional.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                        <div class="bg-red-500 text-white rounded-2xl p-6 shadow-md flex flex-col justify-between">
+                            <div>
+                                <span class="bg-white/20 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Layanan Darurat 24/7</span>
+                                <h2 class="text-xl font-bold mt-3">Hotline Crisis Center</h2>
+                                <p class="text-xs text-red-100 mt-2 leading-relaxed">Jika kamu atau kerabat sedang dalam kondisi krisis emosional mendesak, segera hubungi kontak bantuan medis & psikologis gratis ini.</p>
+                            </div>
+                            <div class="mt-6 flex flex-col gap-2">
+                                <a href="tel:119" class="w-full bg-white text-red-600 rounded-xl py-3 font-bold text-xs text-center hover:bg-red-50 transition">Call Center 119 (Ext 8)</a>
+                                <a href="https://wa.me/628111929427" target="_blank" class="w-full bg-red-600 border border-white/30 text-white rounded-xl py-3 font-bold text-xs text-center hover:bg-red-700 transition">WhatsApp Sejiwa (Kemenkes)</a>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <span class="bg-vital-100 text-vital-800 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Konsultasi Terjadwal</span>
+                                <h2 class="text-xl font-bold text-vital-800 mt-3">Janji Temu Konselor</h2>
+                                <p class="text-xs text-gray-500 mt-2 leading-relaxed">Jadwalkan sesi cerita dan bimbingan tatap muka atau daring bersama konselor profesional / psikolog rekanan Vitalera.</p>
+                            </div>
+                            <button onclick="alert('Fitur pendaftaran konseling akan dibuka segera!')" class="w-full mt-6 bg-vital-700 text-white rounded-xl py-3 font-bold text-xs hover:bg-vital-800 transition">Buat Janji Konseling</button>
+                        </div>
+                    </div>
+
+                    <div class="mt-8">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="shield-alert" class="w-5 h-5 text-orange-500"></i>
+                            <h2 class="font-bold text-lg text-gray-800">Rujukan Pengaduan Kekerasan Perempuan & Anak</h2>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Jika kamu atau orang di sekitarmu mengalami kekerasan, jangan ragu untuk melapor melalui layanan resmi berikut.</p>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div class="bg-orange-500 text-white rounded-2xl p-6 shadow-md flex flex-col justify-between">
+                                <div>
+                                    <span class="bg-white/20 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Layanan Nasional 24/7</span>
+                                    <h2 class="text-xl font-bold mt-3">SAPA 129</h2>
+                                    <p class="text-xs text-orange-50 mt-2 leading-relaxed">Layanan pengaduan kekerasan perempuan dan anak langsung dari Kementerian PPPA. Dapat diakses dari mana saja.</p>
+                                </div>
+                                <div class="mt-6 flex flex-col gap-2">
+                                    <a href="tel:129" class="w-full bg-white text-orange-600 rounded-xl py-3 font-bold text-xs text-center hover:bg-orange-50 transition">Telepon 129</a>
+                                    <a href="https://wa.me/6281111129129" target="_blank" class="w-full bg-orange-600 border border-white/30 text-white rounded-xl py-3 font-bold text-xs text-center hover:bg-orange-700 transition">WhatsApp 08-111-129-129</a>
+                                </div>
+                            </div>
+
+                            <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+                                <div>
+                                    <span class="bg-orange-50 text-orange-600 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Layanan Tingkat Provinsi</span>
+                                    <h2 class="text-xl font-bold text-vital-800 mt-3">Dinas PPPA Provinsi Lampung</h2>
+                                    <p class="text-xs text-gray-500 mt-2 leading-relaxed">Melayani tingkat provinsi, rujukan kasus, serta koordinasi pengaduan kekerasan perempuan dan anak di wilayah Lampung.</p>
+                                </div>
+                                <div class="mt-6 flex flex-col gap-2">
+                                    <a href="tel:0721489983" class="w-full bg-vital-50 text-vital-800 rounded-xl py-3 font-bold text-xs text-center hover:bg-vital-100 transition">Telepon (0721) 489983</a>
+                                    <a href="tel:08117911120" class="w-full bg-vital-700 text-white rounded-xl py-3 font-bold text-xs text-center hover:bg-vital-800 transition">Call Center 0811-7911-120</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE VITA COMMUNITY -->
+            <section id="page-community" class="page">
+                <div class="px-5 lg:px-0">
+                    <h1 class="text-2xl lg:text-3xl font-bold">Vita Community</h1>
+                    <p class="mt-1 text-sm text-gray-600">Gabung dan terhubung dengan sesama pengguna VITALERA di komunitas Instagram kami.</p>
+
+                    <div class="mt-6 rounded-2xl bg-gradient-to-br from-pink-500 via-rose-500 to-orange-400 text-white p-8 shadow-md relative overflow-hidden">
+                        <div class="relative z-10 max-w-md">
+                            <span class="bg-white/20 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Komunitas Resmi</span>
+                            <h2 class="text-2xl font-bold mt-3 flex items-center gap-2">
+                                <i data-lucide="instagram" class="w-6 h-6"></i> VITALERA Community
+                            </h2>
+                            <p class="text-sm text-white/90 mt-3 leading-relaxed">
+                                Yuk gabung ke grup Instagram komunitas VITALERA! Saling terhubung, berbagi cerita, tanya jawab seputar kesehatan reproduksi & mental, dan dapatkan info kegiatan GenRe terbaru bareng teman-teman lainnya.
+                            </p>
+                            <a href="https://ig.me/j/AbbbSqDvlhVSk_IP/" target="_blank" rel="noopener" class="inline-flex items-center gap-2 mt-6 bg-white text-pink-600 rounded-xl py-3 px-6 font-bold text-xs hover:bg-pink-50 transition">
+                                <i data-lucide="instagram" class="w-4 h-4"></i> Gabung Komunitas di Instagram
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                        <div class="rounded-2xl border border-gray-100 bg-white p-5">
+                            <div class="w-11 h-11 rounded-xl bg-pink-50 text-pink-500 flex items-center justify-center mb-3"><i data-lucide="message-circle-heart" class="w-5 h-5"></i></div>
+                            <h3 class="font-bold text-sm">Saling Cerita</h3>
+                            <p class="text-xs text-gray-500 mt-1 leading-relaxed">Ruang aman untuk berbagi pengalaman dan saling mendukung sesama remaja.</p>
+                        </div>
+                        <div class="rounded-2xl border border-gray-100 bg-white p-5">
+                            <div class="w-11 h-11 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center mb-3"><i data-lucide="calendar-heart" class="w-5 h-5"></i></div>
+                            <h3 class="font-bold text-sm">Info Kegiatan</h3>
+                            <p class="text-xs text-gray-500 mt-1 leading-relaxed">Update kegiatan, webinar, dan program GenRe/PIK-R terbaru.</p>
+                        </div>
+                        <div class="rounded-2xl border border-gray-100 bg-white p-5">
+                            <div class="w-11 h-11 rounded-xl bg-vital-50 text-vital-700 flex items-center justify-center mb-3"><i data-lucide="shield-check" class="w-5 h-5"></i></div>
+                            <h3 class="font-bold text-sm">Komunitas Positif</h3>
+                            <p class="text-xs text-gray-500 mt-1 leading-relaxed">Dimoderasi agar tetap sehat, suportif, dan bebas dari perundungan.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PAGE VITA CARD -->
+            <section id="page-card" class="page">
+                <div class="px-5 lg:px-0">
+                    <h1 class="text-2xl lg:text-3xl font-bold">Vita Card</h1>
+                    <p class="mt-1 text-sm text-gray-600">Rangkuman profil kesehatan mental dan jurnal rekaman perkembanganmu.</p>
+
+                    <div class="mt-6 bg-white border border-gray-100 rounded-2xl p-6 shadow-sm max-w-lg mx-auto">
+                        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-full bg-vital-100 text-vital-800 font-extrabold flex items-center justify-center text-lg" id="card-avatar">D</div>
+                                <div>
+                                    <h2 class="font-bold text-base text-gray-800" id="card-user-name">Dzulfaiq</h2>
+                                    <p class="text-xs text-gray-400" id="card-user-meta">17 Tahun • Pelajar / Mahasiswa</p>
+                                </div>
+                            </div>
+                            <span class="px-3 py-1 bg-vital-50 border border-vital-200 text-vital-700 text-xs font-bold rounded-full">Aktif</span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 mt-6">
+                            <div class="bg-gray-50 rounded-xl p-4 text-center">
+                                <div class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Skor Mood Terakhir</div>
+                                <div class="text-3xl font-bold text-vital-800 mt-1" id="card-score">72</div>
+                            </div>
+                            <div class="bg-gray-50 rounded-xl p-4 text-center">
+                                <div class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Status Risiko</div>
+                                <div class="text-sm font-bold text-amber-500 mt-2" id="card-risk">Risiko Sedang</div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 text-xs text-gray-500 space-y-2">
+                            <div class="flex justify-between">
+                                <span>Refleksi Terakhir:</span>
+                                <span class="font-medium text-gray-700">Hari Ini</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Materi Diselesaikan:</span>
+                                <span class="font-medium text-gray-700" id="card-materials-done">0 Modul</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-bottom-nav fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 py-2 px-4 flex justify-around items-center z-40 bottom-nav">
+    <button onclick="navigate('home')" id="m-nav-home" class="nav-item active flex flex-col items-center gap-1 text-[10px] text-gray-500">
+        <div class="nav-icon p-1.5 rounded-xl"><i data-lucide="house" class="w-5 h-5"></i></div>
+        <span>Beranda</span>
+    </button>
+    <button onclick="navigate('check')" id="m-nav-check" class="nav-item flex flex-col items-center gap-1 text-[10px] text-gray-500">
+        <div class="nav-icon p-1.5 rounded-xl"><i data-lucide="heart-pulse" class="w-5 h-5"></i></div>
+        <span>Check</span>
+    </button>
+    <button onclick="navigate('buddy')" id="m-nav-buddy" class="nav-item flex flex-col items-center gap-1 text-[10px] text-gray-500">
+        <div class="nav-icon p-1.5 rounded-xl"><i data-lucide="bot" class="w-5 h-5"></i></div>
+        <span>Buddy</span>
+    </button>
+    <button onclick="navigate('learn')" id="m-nav-learn" class="nav-item flex flex-col items-center gap-1 text-[10px] text-gray-500">
+        <div class="nav-icon p-1.5 rounded-xl"><i data-lucide="book-open" class="w-5 h-5"></i></div>
+        <span>Learn</span>
+    </button>
+    <button onclick="navigate('card')" id="m-nav-card" class="nav-item flex flex-col items-center gap-1 text-[10px] text-gray-500">
+        <div class="nav-icon p-1.5 rounded-xl"><i data-lucide="chart-no-axes-combined" class="w-5 h-5"></i></div>
+        <span>Card</span>
+    </button>
+</nav>
+
+<script>
+/* =========================================================
+   DATA 50 MATERI GENRE — VITA LEARN
+   Semua materi terbuka bebas untuk semua pengguna (tanpa kunci/lock)
+   ========================================================= */
+const genreMaterials = [
+{cat:'genre', title:'Generasi Berencana (GenRe)', time:'8 menit',
+ penjelasan:['GenRe adalah program yang mengajak remaja merencanakan kehidupan secara matang.','Perencanaan mencakup pendidikan, karier, kesehatan, pernikahan, dan kehidupan keluarga.'],
+ penyebab:['Kurangnya perencanaan masa depan.','Pengaruh lingkungan dan teman sebaya.','Kurangnya informasi mengenai kesehatan dan kehidupan berkeluarga.'],
+ dampak:['Remaja lebih mampu menentukan tujuan hidup.','Mengurangi perilaku berisiko.','Mendorong kesiapan menghadapi kehidupan berkeluarga.'],
+ solusi:['Aktif mengikuti kegiatan GenRe dan PIK-R.','Membuat rencana pendidikan dan karier.','Mempelajari kesehatan reproduksi dan life skills.']},
+
+{cat:'genre', title:'PIK-R (Pusat Informasi dan Konseling Remaja)', time:'7 menit',
+ penjelasan:['PIK-R adalah Pusat Informasi dan Konseling Remaja.','Menjadi wadah remaja untuk memperoleh informasi, edukasi, dan konseling mengenai berbagai persoalan remaja.'],
+ penyebab:['Banyak remaja memperoleh informasi dari sumber yang tidak terpercaya.','Remaja membutuhkan tempat berdiskusi yang aman.'],
+ dampak:['Pengetahuan remaja meningkat.','Remaja dapat memperoleh dukungan dan informasi yang tepat.','Mendorong perilaku positif.'],
+ solusi:['Aktif dalam kegiatan PIK-R.','Menjadi pendidik sebaya.','Mengembangkan kegiatan edukasi kreatif.']},
+
+{cat:'genre', title:'Pendewasaan Usia Perkawinan (PUP)', time:'8 menit',
+ penjelasan:['PUP merupakan upaya meningkatkan kesiapan remaja sebelum memasuki kehidupan perkawinan.','Kesiapan bukan hanya usia, tetapi juga kesehatan, mental, pendidikan, sosial, dan ekonomi.'],
+ penyebab:['Pernikahan membutuhkan tanggung jawab besar.','Banyak remaja belum memiliki kesiapan yang cukup.'],
+ dampak:['Kesiapan yang baik dapat membantu membangun keluarga yang lebih sehat.','Ketidaksiapan dapat meningkatkan risiko konflik keluarga.'],
+ solusi:['Fokus menyelesaikan pendidikan.','Mempersiapkan karier.','Meningkatkan kematangan mental dan ekonomi.']},
+
+{cat:'genre', title:'Pernikahan Dini', time:'9 menit',
+ penjelasan:['Pernikahan dini adalah perkawinan yang terjadi ketika seseorang belum memiliki kesiapan yang memadai untuk menjalani kehidupan berkeluarga.'],
+ penyebab:['Tekanan keluarga atau lingkungan.','Faktor ekonomi.','Kehamilan yang tidak direncanakan.','Kurangnya pendidikan dan informasi.'],
+ dampak:['Pendidikan dapat terhenti.','Risiko masalah ekonomi.','Konflik rumah tangga.','Kesiapan mental belum optimal.','Kehamilan pada usia terlalu muda dapat membawa risiko kesehatan.'],
+ solusi:['Meningkatkan pendidikan.','Memberikan edukasi PUP.','Membuat perencanaan masa depan.','Melibatkan keluarga dan tenaga profesional.']},
+
+{cat:'triad', title:'Triad KRR', time:'8 menit',
+ penjelasan:['Triad KRR adalah tiga masalah utama kesehatan reproduksi remaja yang sering menjadi fokus GenRe: Seksualitas, HIV/AIDS, dan Penyalahgunaan NAPZA.'],
+ penyebab:['Kurangnya pengetahuan.','Tekanan teman sebaya.','Rasa ingin tahu.','Lingkungan yang kurang mendukung.'],
+ dampak:['Kehamilan tidak direncanakan.','IMS dan HIV.','Ketergantungan NAPZA.','Gangguan pendidikan dan masa depan.'],
+ solusi:['Tingkatkan literasi kesehatan.','Hindari perilaku berisiko.','Pilih pergaulan positif.','Manfaatkan PIK-R dan layanan kesehatan.']},
+
+{cat:'triad', title:'Kesehatan Reproduksi Remaja', time:'8 menit',
+ penjelasan:['Kesehatan reproduksi mencakup kondisi sehat secara fisik, mental, dan sosial yang berkaitan dengan sistem reproduksi.'],
+ penyebab:['Kurangnya informasi.','Kebersihan yang kurang.','Perilaku berisiko.','Takut berkonsultasi.'],
+ dampak:['Infeksi.','Gangguan kesehatan reproduksi.','Kehamilan tidak direncanakan.','Masalah psikologis.'],
+ solusi:['Pelajari informasi dari sumber terpercaya.','Jaga kebersihan tubuh.','Hindari perilaku berisiko.','Konsultasikan masalah kepada tenaga kesehatan.']},
+
+{cat:'triad', title:'Seksualitas Remaja', time:'8 menit',
+ penjelasan:['Seksualitas merupakan bagian dari perkembangan manusia yang mencakup aspek biologis, psikologis, sosial, dan hubungan dengan orang lain.'],
+ penyebab:['Informasi yang salah.','Pengaruh media sosial.','Tekanan pasangan atau teman.','Rasa ingin tahu.'],
+ dampak:['Keputusan yang tidak bertanggung jawab.','Kehamilan tidak direncanakan.','IMS.','Masalah psikologis dan sosial.'],
+ solusi:['Dapatkan edukasi yang benar.','Pahami batasan diri.','Hormati diri dan orang lain.','Hindari perilaku seksual berisiko.']},
+
+{cat:'triad', title:'HIV/AIDS', time:'9 menit',
+ penjelasan:['HIV adalah virus yang menyerang sistem kekebalan tubuh.','AIDS merupakan kondisi ketika infeksi HIV telah menyebabkan gangguan kekebalan yang berat.'],
+ penyebab:['HIV dapat menular melalui jalur tertentu, termasuk paparan darah yang terinfeksi dan aktivitas seksual berisiko.','HIV tidak menular melalui berjabat tangan, berpelukan, atau berbagi tempat duduk.'],
+ dampak:['Sistem kekebalan tubuh melemah.','Dapat muncul berbagai infeksi.','Stigma dan diskriminasi juga dapat menjadi masalah.'],
+ solusi:['Edukasi mengenai cara penularan.','Hindari perilaku berisiko.','Melakukan tes jika memiliki risiko.','Orang dengan HIV dapat menjalani terapi sesuai anjuran tenaga kesehatan.']},
+
+{cat:'triad', title:'Infeksi Menular Seksual (IMS)', time:'7 menit',
+ penjelasan:['IMS adalah infeksi yang dapat ditularkan melalui aktivitas seksual.'],
+ penyebab:['Paparan terhadap infeksi.','Perilaku seksual berisiko.','Tidak melakukan pemeriksaan ketika memiliki gejala.'],
+ dampak:['Nyeri atau keluhan pada organ reproduksi.','Komplikasi kesehatan.','Dapat meningkatkan risiko penularan HIV untuk beberapa IMS.'],
+ solusi:['Hindari perilaku seksual berisiko.','Periksa jika mengalami gejala.','Ikuti pengobatan tenaga kesehatan.','Jangan melakukan pengobatan sendiri secara sembarangan.']},
+
+{cat:'triad', title:'NAPZA', time:'8 menit',
+ penjelasan:['NAPZA adalah Narkotika, Psikotropika, dan Zat Adiktif.','Penyalahgunaannya dapat memengaruhi tubuh dan sistem saraf serta menimbulkan ketergantungan.'],
+ penyebab:['Rasa ingin tahu.','Tekanan teman.','Masalah keluarga.','Stres.','Keinginan mencoba.'],
+ dampak:['Ketergantungan.','Gangguan fisik dan mental.','Prestasi menurun.','Masalah keluarga, sosial, dan hukum.'],
+ solusi:['Jangan mencoba.','Berani mengatakan "tidak".','Pilih lingkungan pertemanan yang sehat.','Cari bantuan profesional jika sudah mengalami ketergantungan.']},
+
+{cat:'triad', title:'Rokok', time:'6 menit',
+ penjelasan:['Rokok mengandung nikotin yang dapat menyebabkan ketergantungan serta berbagai zat berbahaya.'],
+ penyebab:['Teman sebaya.','Rasa penasaran.','Meniru keluarga.','Anggapan merokok terlihat keren.'],
+ dampak:['Ketergantungan nikotin.','Gangguan kesehatan.','Mengurangi kebugaran.','Paparan asap juga dapat membahayakan orang lain.'],
+ solusi:['Jangan mulai merokok.','Jauhi lingkungan yang mendorong merokok.','Cari dukungan untuk berhenti.']},
+
+{cat:'triad', title:'Vape (Rokok Elektronik)', time:'6 menit',
+ penjelasan:['Vape atau rokok elektronik menghasilkan aerosol yang dapat mengandung nikotin dan zat lainnya.'],
+ penyebab:['Rasa penasaran.','Pengaruh teman.','Tren media sosial.','Anggapan vape tidak berbahaya.'],
+ dampak:['Ketergantungan nikotin.','Dapat memengaruhi kesehatan.','Mempertahankan kebiasaan menggunakan nikotin.'],
+ solusi:['Hindari penggunaan.','Jangan terpengaruh tren.','Cari bantuan jika mengalami ketergantungan nikotin.']},
+
+{cat:'triad', title:'Kehamilan Tidak Direncanakan', time:'8 menit',
+ penjelasan:['Kehamilan tidak direncanakan adalah kehamilan yang terjadi ketika seseorang atau pasangan belum menginginkannya atau belum siap.'],
+ penyebab:['Kurangnya edukasi kesehatan reproduksi.','Perilaku seksual berisiko.','Kurangnya perencanaan.'],
+ dampak:['Tekanan psikologis.','Pendidikan dapat terganggu.','Masalah sosial dan ekonomi.','Kesiapan menjadi orang tua belum optimal.'],
+ solusi:['Pendidikan kesehatan reproduksi.','Perencanaan kehidupan.','Hindari perilaku berisiko.','Konsultasi dengan tenaga kesehatan.']},
+
+{cat:'gizi', title:'Pubertas', time:'7 menit',
+ penjelasan:['Pubertas adalah masa perubahan dari anak menuju dewasa akibat perubahan hormonal.'],
+ penyebab:['Perubahan hormon secara alami.'],
+ dampak:['Perubahan bentuk tubuh.','Menstruasi pada perempuan.','Mimpi basah pada laki-laki.','Perubahan emosi.','Munculnya ketertarikan terhadap orang lain.'],
+ solusi:['Memahami perubahan tubuh.','Menjaga kebersihan.','Mengelola emosi.','Mencari informasi yang benar.']},
+
+{cat:'gizi', title:'Menstruasi Sehat', time:'6 menit',
+ penjelasan:['Menstruasi merupakan proses biologis normal pada perempuan yang terjadi secara berkala.'],
+ penyebab:['Perubahan hormonal.','Stres.','Pola makan.','Kondisi kesehatan tertentu.'],
+ dampak:['Nyeri.','Lemas.','Gangguan aktivitas jika keluhan berat.'],
+ solusi:['Jaga kebersihan.','Konsumsi makanan bergizi.','Istirahat cukup.','Konsultasikan keluhan yang berat atau tidak biasa kepada tenaga kesehatan.']},
+
+{cat:'gizi', title:'Anemia Remaja', time:'7 menit',
+ penjelasan:['Anemia adalah kondisi ketika kadar hemoglobin lebih rendah dari normal.','Remaja putri memiliki risiko lebih tinggi karena kehilangan darah saat menstruasi dan meningkatnya kebutuhan zat besi.'],
+ penyebab:['Kekurangan zat besi.','Pola makan tidak seimbang.','Menstruasi.','Diet ekstrem.'],
+ dampak:['Lemas.','Pusing.','Mudah mengantuk.','Konsentrasi belajar menurun.','Produktivitas menurun.'],
+ solusi:['Makan makanan kaya zat besi.','Konsumsi vitamin C untuk membantu penyerapan zat besi.','Minum TTD sesuai program/anjuran tenaga kesehatan.','Periksa jika mengalami gejala.']},
+
+{cat:'gizi', title:'Tablet Tambah Darah (TTD)', time:'6 menit',
+ penjelasan:['TTD merupakan salah satu upaya untuk membantu mencegah anemia akibat kekurangan zat besi.'],
+ penyebab:['Kebutuhan zat besi remaja meningkat.','Remaja putri mengalami menstruasi.'],
+ dampak:['Lemas.','Sulit berkonsentrasi.','Produktivitas menurun.'],
+ solusi:['Konsumsi TTD sesuai program dan petunjuk tenaga kesehatan.','Tetap konsumsi makanan bergizi.','Jangan mengganti TTD dengan suplemen lain tanpa saran tenaga kesehatan.']},
+
+{cat:'gizi', title:'Stunting', time:'8 menit',
+ penjelasan:['Stunting adalah gangguan pertumbuhan akibat kekurangan gizi kronis dan faktor lain yang berlangsung dalam waktu lama, terutama pada masa awal kehidupan.'],
+ penyebab:['Kekurangan gizi.','Infeksi berulang.','Sanitasi buruk.','Kesehatan dan gizi ibu yang kurang optimal.','Pola asuh dan pemberian makan yang tidak tepat.'],
+ dampak:['Pertumbuhan fisik terganggu.','Perkembangan dapat terdampak.','Risiko masalah kesehatan di kemudian hari dapat meningkat.'],
+ solusi:['Pencegahan dimulai sejak remaja.','Jaga status gizi.','Cegah anemia.','Persiapkan kehamilan dan kehidupan berkeluarga secara sehat.','Perhatikan gizi ibu dan anak.']},
+
+{cat:'gizi', title:'Gizi Seimbang', time:'7 menit',
+ penjelasan:['Gizi seimbang adalah pola makan yang memenuhi kebutuhan tubuh dengan beragam makanan dalam jumlah yang sesuai.'],
+ penyebab:['Terlalu banyak makanan tinggi gula, garam, dan lemak.','Kurang sayur dan buah.','Pola makan tidak teratur.'],
+ dampak:['Kekurangan gizi.','Berat badan berlebih.','Gangguan kesehatan.'],
+ solusi:['Konsumsi makanan beragam.','Perbanyak makanan bergizi.','Minum air yang cukup.','Aktivitas fisik secara rutin.']},
+
+{cat:'gizi', title:'Obesitas Remaja', time:'7 menit',
+ penjelasan:['Obesitas adalah kondisi penumpukan lemak tubuh berlebihan yang dapat meningkatkan risiko masalah kesehatan.'],
+ penyebab:['Asupan energi berlebihan.','Kurang aktivitas fisik.','Pola tidur buruk.','Kebiasaan mengonsumsi makanan/minuman tinggi kalori.'],
+ dampak:['Risiko penyakit metabolik meningkat.','Kebugaran menurun.','Dapat memengaruhi kepercayaan diri dan kesehatan mental.'],
+ solusi:['Perbaiki pola makan.','Tingkatkan aktivitas fisik.','Tidur cukup.','Hindari diet ekstrem.']},
+
+{cat:'mental', title:'Kesehatan Mental Remaja', time:'8 menit',
+ penjelasan:['Kesehatan mental adalah kondisi yang membantu seseorang mengelola emosi, menghadapi tekanan, belajar, dan berinteraksi.'],
+ penyebab:['Tekanan akademik.','Konflik keluarga.','Masalah pertemanan.','Bullying.','Tekanan media sosial.'],
+ dampak:['Stres.','Kecemasan.','Sulit konsentrasi.','Menarik diri.','Motivasi menurun.'],
+ solusi:['Cerita kepada orang yang dipercaya.','Tidur dan makan dengan baik.','Lakukan aktivitas positif.','Cari bantuan profesional jika masalah mengganggu kehidupan sehari-hari.']},
+
+{cat:'mental', title:'Self-Love', time:'6 menit',
+ penjelasan:['Self-love adalah kemampuan menghargai dan memperlakukan diri sendiri dengan baik.'],
+ penyebab:['Sering membandingkan diri.','Kritik berlebihan.','Standar kecantikan yang tidak realistis.'],
+ dampak:['Rendah diri.','Tidak percaya diri.','Mudah mencari validasi.'],
+ solusi:['Kenali kelebihan diri.','Terima kekurangan sambil terus berkembang.','Berhenti membandingkan diri secara berlebihan.']},
+
+{cat:'mental', title:'Self-Care', time:'6 menit',
+ penjelasan:['Self-care adalah tindakan menjaga kesehatan fisik, mental, dan emosional diri.'],
+ penyebab:['Kesibukan.','Tuntutan sekolah.','Mengabaikan kebutuhan diri.'],
+ dampak:['Kelelahan.','Stres.','Produktivitas menurun.'],
+ solusi:['Tidur cukup.','Makan bergizi.','Berolahraga.','Beristirahat.','Melakukan aktivitas positif.']},
+
+{cat:'mental', title:'Insecure', time:'6 menit',
+ penjelasan:['Insecure adalah perasaan tidak aman atau tidak yakin terhadap diri sendiri.'],
+ penyebab:['Membandingkan diri.','Kritik orang lain.','Pengalaman buruk.','Standar sosial yang tidak realistis.'],
+ dampak:['Rendah diri.','Takut mencoba.','Bergantung pada penilaian orang lain.'],
+ solusi:['Kenali kelebihan diri.','Kurangi membandingkan diri.','Fokus pada perkembangan diri.','Bangun lingkungan yang suportif.']},
+
+{cat:'mental', title:'Overthinking', time:'7 menit',
+ penjelasan:['Overthinking adalah kebiasaan memikirkan suatu hal secara berlebihan dan berulang.'],
+ penyebab:['Kecemasan.','Takut gagal.','Pengalaman buruk.','Terlalu memikirkan pendapat orang.'],
+ dampak:['Stres.','Sulit tidur.','Sulit mengambil keputusan.','Konsentrasi terganggu.'],
+ solusi:['Fokus pada hal yang dapat dikendalikan.','Tuliskan masalah dan solusi.','Batasi waktu memikirkan masalah.','Bicara dengan orang yang dipercaya.']},
+
+{cat:'mental', title:'Burnout', time:'7 menit',
+ penjelasan:['Burnout adalah kondisi kelelahan akibat tekanan yang berlangsung terus-menerus.'],
+ penyebab:['Beban sekolah berlebihan.','Kurang istirahat.','Tuntutan tinggi.','Tidak memiliki waktu pemulihan.'],
+ dampak:['Kelelahan.','Kehilangan motivasi.','Sulit konsentrasi.','Prestasi menurun.'],
+ solusi:['Atur jadwal.','Istirahat cukup.','Kurangi beban yang tidak perlu.','Cari bantuan jika kondisi berlangsung lama.']},
+
+{cat:'digital', title:'FOMO (Fear of Missing Out)', time:'6 menit',
+ penjelasan:['FOMO adalah rasa takut tertinggal dari aktivitas atau pengalaman orang lain.'],
+ penyebab:['Media sosial.','Membandingkan diri.','Keinginan diterima kelompok.'],
+ dampak:['Cemas.','Boros.','Sulit fokus.','Mengikuti tren tanpa pertimbangan.'],
+ solusi:['Batasi media sosial.','Fokus pada tujuan pribadi.','Ingat bahwa media sosial tidak menggambarkan seluruh kehidupan seseorang.']},
+
+{cat:'digital', title:'JOMO (Joy of Missing Out)', time:'6 menit',
+ penjelasan:['JOMO adalah merasa nyaman ketika tidak mengikuti semua tren atau kegiatan orang lain.'],
+ penyebab:['Kesadaran terhadap prioritas diri.','Keinginan menjalani kehidupan yang lebih tenang.'],
+ dampak:['Lebih tenang.','Fokus pada tujuan.','Waktu lebih banyak untuk diri dan keluarga.'],
+ solusi:['Kurangi notifikasi.','Nikmati aktivitas offline.','Tentukan prioritas.']},
+
+{cat:'digital', title:"FOPO (Fear of Other People's Opinions)", time:'6 menit',
+ penjelasan:['FOPO adalah rasa takut berlebihan terhadap pendapat orang lain.'],
+ penyebab:['Kurang percaya diri.','Takut ditolak.','Pengalaman mendapat kritik.'],
+ dampak:['Sulit menjadi diri sendiri.','Takut mengambil keputusan.','Terlalu mencari validasi.'],
+ solusi:['Bangun kepercayaan diri.','Bedakan kritik yang membangun dengan komentar negatif.','Fokus pada nilai dan tujuan diri.']},
+
+{cat:'digital', title:'Doomscrolling', time:'6 menit',
+ penjelasan:['Doomscrolling adalah kebiasaan terus-menerus melihat konten atau berita negatif di internet.'],
+ penyebab:['Rasa penasaran.','Kecemasan.','Kebiasaan scrolling.','Algoritma media sosial.'],
+ dampak:['Stres.','Cemas.','Sulit tidur.','Kelelahan mental.'],
+ solusi:['Batasi waktu media sosial.','Pilih sumber informasi terpercaya.','Beri jeda dari layar.']},
+
+{cat:'digital', title:'Cyberbullying', time:'7 menit',
+ penjelasan:['Cyberbullying adalah perundungan yang dilakukan melalui media digital.'],
+ penyebab:['Konflik.','Keinginan mempermalukan orang lain.','Anonimitas internet.'],
+ dampak:['Korban merasa takut.','Rendah diri.','Stres.','Menarik diri dari lingkungan.'],
+ solusi:['Jangan ikut menyebarkan konten.','Simpan bukti.','Blokir dan laporkan pelaku.','Ceritakan kepada orang yang dipercaya.']},
+
+{cat:'digital', title:'Hoaks', time:'6 menit',
+ penjelasan:['Hoaks adalah informasi palsu atau menyesatkan yang disebarkan seolah-olah benar.'],
+ penyebab:['Tidak memeriksa sumber.','Kebiasaan langsung membagikan informasi.','Judul yang provokatif.'],
+ dampak:['Kepanikan.','Konflik.','Keputusan yang salah.'],
+ solusi:['Periksa sumber.','Bandingkan dengan sumber terpercaya.','Jangan langsung membagikan informasi.']},
+
+{cat:'digital', title:'Literasi Digital', time:'7 menit',
+ penjelasan:['Literasi digital adalah kemampuan menggunakan teknologi dan informasi secara kritis, aman, dan bertanggung jawab.'],
+ penyebab:['Kurang edukasi.','Terlalu mudah percaya informasi online.'],
+ dampak:['Mudah tertipu.','Mudah percaya hoaks.','Risiko privasi meningkat.'],
+ solusi:['Periksa informasi.','Lindungi data pribadi.','Gunakan media sosial secara bertanggung jawab.']},
+
+{cat:'sosial', title:'Toxic Relationship', time:'8 menit',
+ penjelasan:['Toxic relationship adalah hubungan yang secara konsisten memberikan dampak negatif dan tidak sehat.'],
+ penyebab:['Kontrol berlebihan.','Manipulasi.','Kurang menghargai pasangan.','Komunikasi buruk.'],
+ dampak:['Stres.','Kehilangan kepercayaan diri.','Ketakutan.','Gangguan kesehatan mental.'],
+ solusi:['Kenali tanda hubungan tidak sehat.','Tetapkan batasan.','Cari dukungan.','Utamakan keselamatan.']},
+
+{cat:'sosial', title:'Kekerasan Seksual', time:'9 menit',
+ penjelasan:['Kekerasan seksual adalah tindakan bernuansa seksual yang dilakukan tanpa persetujuan atau melalui paksaan, ancaman, manipulasi, atau kondisi ketika seseorang tidak dapat memberikan persetujuan.'],
+ penyebab:['Penyalahgunaan kekuasaan.','Kurangnya pemahaman tentang batasan.','Budaya menyalahkan korban.'],
+ dampak:['Trauma.','Cedera.','Gangguan kesehatan mental.','Masalah sosial.'],
+ solusi:['Edukasi mengenai batasan dan persetujuan.','Jangan menyalahkan korban.','Laporkan dan cari bantuan.','Prioritaskan keselamatan korban.']},
+
+{cat:'sosial', title:'Consent (Persetujuan)', time:'6 menit',
+ penjelasan:['Consent berarti persetujuan.','Persetujuan harus diberikan secara bebas, sadar, dan tanpa paksaan.'],
+ penyebab:['Kurangnya pemahaman mengenai batasan.','Anggapan bahwa pasangan boleh memaksa.'],
+ dampak:['Pelanggaran batas.','Konflik.','Kekerasan.'],
+ solusi:['Hormati keputusan orang lain.','Jangan memaksa.','Pahami bahwa seseorang berhak mengatakan "tidak".']},
+
+{cat:'sosial', title:'Personal Boundaries', time:'6 menit',
+ penjelasan:['Personal boundaries adalah batasan mengenai bagaimana seseorang ingin diperlakukan.'],
+ penyebab:['Takut mengecewakan orang.','Kurang percaya diri.','Takut ditolak.'],
+ dampak:['Mudah dimanfaatkan.','Stres.','Tidak nyaman dalam hubungan.'],
+ solusi:['Belajar mengatakan "tidak".','Sampaikan batasan dengan jelas.','Hormati batasan orang lain.']},
+
+{cat:'sosial', title:'Peer Pressure', time:'6 menit',
+ penjelasan:['Peer pressure adalah tekanan dari teman atau kelompok untuk melakukan sesuatu agar diterima.'],
+ penyebab:['Takut dikucilkan.','Keinginan mendapatkan pengakuan.','Kurang percaya diri.'],
+ dampak:['Merokok.','NAPZA.','Tawuran.','Perilaku berisiko lainnya.'],
+ solusi:['Berani mengatakan tidak.','Pilih teman yang positif.','Pegang prinsip.','Tinggalkan situasi yang berbahaya.']},
+
+{cat:'sosial', title:'Pergaulan Sehat', time:'6 menit',
+ penjelasan:['Pergaulan sehat adalah hubungan sosial yang saling menghargai, mendukung, dan tidak mendorong perilaku berbahaya.'],
+ penyebab:['Lingkungan negatif.','Tekanan kelompok.','Kurangnya batasan diri.'],
+ dampak:['Konflik.','Perilaku berisiko.','Prestasi menurun.'],
+ solusi:['Pilih teman yang positif.','Saling menghargai.','Hindari lingkungan yang mendorong perilaku berbahaya.']},
+
+{cat:'lifeskill', title:'Life Skills', time:'7 menit',
+ penjelasan:['Life skills adalah keterampilan yang membantu seseorang menghadapi masalah dan menjalani kehidupan secara efektif.'],
+ penyebab:['Remaja akan menghadapi berbagai keputusan dan masalah.'],
+ dampak:['Remaja lebih mandiri.','Lebih mampu mengambil keputusan.','Lebih siap menghadapi tekanan.'],
+ solusi:['Latih komunikasi.','Latih pengambilan keputusan.','Belajar mengelola emosi.','Tingkatkan kemampuan memecahkan masalah.']},
+
+{cat:'lifeskill', title:'Komunikasi Efektif', time:'7 menit',
+ penjelasan:['Komunikasi efektif adalah kemampuan menyampaikan pesan dengan jelas sekaligus mendengarkan orang lain.'],
+ penyebab:['Emosi.','Tidak mendengarkan.','Asumsi.','Cara bicara yang kasar.'],
+ dampak:['Salah paham.','Konflik.','Hubungan menjadi buruk.'],
+ solusi:['Dengarkan secara aktif.','Gunakan bahasa yang sopan.','Sampaikan perasaan dengan jelas.','Hindari menghina.']},
+
+{cat:'lifeskill', title:'Manajemen Emosi', time:'7 menit',
+ penjelasan:['Manajemen emosi adalah kemampuan mengenali dan mengatur respons terhadap emosi.'],
+ penyebab:['Stres.','Konflik.','Kurang tidur.','Tekanan lingkungan.'],
+ dampak:['Mudah marah.','Konflik.','Keputusan impulsif.'],
+ solusi:['Berhenti sejenak.','Tarik napas.','Kenali penyebab emosi.','Bicara setelah keadaan lebih tenang.']},
+
+{cat:'lifeskill', title:'Problem Solving', time:'7 menit',
+ penjelasan:['Problem solving adalah kemampuan menemukan solusi terhadap suatu masalah.'],
+ penyebab:['Panik.','Tidak mengetahui akar masalah.','Takut mengambil keputusan.'],
+ dampak:['Masalah berlarut-larut.','Stres meningkat.','Salah mengambil keputusan.'],
+ solusi:['Tentukan masalah.','Cari beberapa alternatif.','Pertimbangkan risiko.','Pilih solusi terbaik.','Evaluasi hasilnya.']},
+
+{cat:'lifeskill', title:'Pengambilan Keputusan', time:'7 menit',
+ penjelasan:['Pengambilan keputusan adalah proses memilih tindakan berdasarkan informasi dan pertimbangan.'],
+ penyebab:['Emosi.','Tekanan teman.','Kurangnya informasi.','Terburu-buru.'],
+ dampak:['Penyesalan.','Kerugian.','Masalah sosial atau kesehatan.'],
+ solusi:['Jangan terburu-buru.','Cari informasi.','Pertimbangkan konsekuensi.','Pilih keputusan yang aman dan sesuai nilai diri.']},
+
+{cat:'lifeskill', title:'Critical Thinking', time:'7 menit',
+ penjelasan:['Critical thinking adalah kemampuan menganalisis informasi secara kritis sebelum mempercayai atau mengambil keputusan.'],
+ penyebab:['Banyak informasi dan konten di media sosial.'],
+ dampak:['Mudah percaya hoaks.','Mudah dimanipulasi.','Salah mengambil keputusan.'],
+ solusi:['Tanyakan sumber informasi.','Cari bukti.','Bandingkan beberapa sumber.','Jangan langsung percaya judul atau video viral.']},
+
+{cat:'masadepan', title:'Perencanaan Masa Depan', time:'7 menit',
+ penjelasan:['Perencanaan masa depan adalah menentukan tujuan hidup dan langkah untuk mencapainya.'],
+ penyebab:['Tidak mengetahui tujuan.','Takut gagal.','Terlalu mengikuti orang lain.'],
+ dampak:['Hidup kurang terarah.','Sulit menentukan prioritas.'],
+ solusi:['Tentukan tujuan.','Buat target jangka pendek dan panjang.','Evaluasi perkembangan secara berkala.']},
+
+{cat:'masadepan', title:'Perencanaan Karier', time:'7 menit',
+ penjelasan:['Perencanaan karier adalah proses menentukan arah pendidikan dan pekerjaan sesuai minat, kemampuan, dan tujuan.'],
+ penyebab:['Mengikuti teman.','Tekanan keluarga.','Tidak mengenal minat dan bakat.'],
+ dampak:['Tidak menikmati pendidikan atau pekerjaan.','Motivasi menurun.','Potensi tidak berkembang.'],
+ solusi:['Kenali minat dan bakat.','Cari informasi jurusan dan profesi.','Konsultasi dengan guru, orang tua, atau konselor.']},
+
+{cat:'masadepan', title:'8 Fungsi Keluarga', time:'8 menit',
+ penjelasan:['Keluarga memiliki berbagai fungsi penting dalam perkembangan remaja, antara lain fungsi agama, sosial budaya, cinta kasih, perlindungan, reproduksi, sosialisasi dan pendidikan, ekonomi, serta pembinaan lingkungan.'],
+ penyebab:['Komunikasi buruk.','Konflik.','Kurangnya perhatian.'],
+ dampak:['Remaja merasa tidak aman.','Masalah komunikasi.','Risiko mencari lingkungan yang salah.'],
+ solusi:['Bangun komunikasi terbuka.','Saling menghargai.','Luangkan waktu bersama.','Jadikan keluarga tempat yang aman untuk bercerita.']},
+
+{cat:'masadepan', title:'Bonus Demografi', time:'8 menit',
+ penjelasan:['Bonus demografi adalah kondisi ketika proporsi penduduk usia produktif lebih besar dibandingkan penduduk usia nonproduktif.'],
+ penyebab:['Perubahan struktur penduduk.','Jumlah penduduk usia produktif yang besar.'],
+ dampak:['Dapat menjadi peluang besar bagi pembangunan ekonomi.','Namun dapat menjadi tantangan jika kualitas pendidikan, kesehatan, dan keterampilan rendah.'],
+ solusi:['Tingkatkan pendidikan.','Jaga kesehatan.','Tingkatkan keterampilan.','Persiapkan karier.','Hindari pernikahan dan perilaku berisiko yang dapat menghambat masa depan.']},
+
+{cat:'masadepan', title:'Remaja sebagai Agent of Change', time:'8 menit',
+ penjelasan:['Agent of Change berarti remaja menjadi agen perubahan yang membawa pengaruh positif bagi diri sendiri, teman, keluarga, dan masyarakat.'],
+ penyebab:['Remaja memiliki kreativitas, energi, dan kemampuan memengaruhi teman sebaya.'],
+ dampak:['Terbentuk lingkungan remaja yang lebih sehat.','Informasi positif dapat menyebar.','Masalah remaja dapat dicegah bersama.'],
+ solusi:['Aktif di PIK-R/GenRe.','Menjadi pendidik sebaya.','Membuat kampanye kesehatan.','Menjadi contoh dalam perilaku positif.','Berani menyuarakan pencegahan pernikahan dini, NAPZA, seks berisiko, bullying, dan masalah remaja lainnya.']}
+];
+
+
+const categoryMeta = {
+    all:       { label: 'Semua',            icon: 'layout-grid',      color: 'gray'   },
+    genre:     { label: 'GenRe & PIK-R',     icon: 'heart-handshake',  color: 'purple' },
+    triad:     { label: 'Triad KRR',         icon: 'shield-alert',     color: 'blue'   },
+    gizi:      { label: 'Gizi & Pubertas',   icon: 'apple',            color: 'emerald'},
+    mental:    { label: 'Mental & Emosi',    icon: 'brain',            color: 'rose'   },
+    digital:   { label: 'Dunia Digital',     icon: 'smartphone',       color: 'indigo' },
+    sosial:    { label: 'Hubungan Sosial',   icon: 'users',            color: 'amber'  },
+    lifeskill: { label: 'Life Skills',       icon: 'target',           color: 'teal'   },
+    masadepan: { label: 'Masa Depan',        icon: 'rocket',           color: 'cyan'   }
+};
+
+const colorClasses = {
+    gray:    { bg: 'bg-gray-100',    text: 'text-gray-600',   activeBg: 'bg-gray-700' },
+    purple:  { bg: 'bg-purple-50',   text: 'text-purple-600', activeBg: 'bg-purple-600' },
+    blue:    { bg: 'bg-blue-50',     text: 'text-blue-600',   activeBg: 'bg-blue-600' },
+    emerald: { bg: 'bg-emerald-50',  text: 'text-emerald-600',activeBg: 'bg-emerald-600' },
+    rose:    { bg: 'bg-rose-50',     text: 'text-rose-600',   activeBg: 'bg-rose-600' },
+    indigo:  { bg: 'bg-indigo-50',   text: 'text-indigo-600', activeBg: 'bg-indigo-600' },
+    amber:   { bg: 'bg-amber-50',    text: 'text-amber-600',  activeBg: 'bg-amber-600' },
+    teal:    { bg: 'bg-teal-50',     text: 'text-teal-600',   activeBg: 'bg-teal-600' },
+    cyan:    { bg: 'bg-cyan-50',     text: 'text-cyan-600',   activeBg: 'bg-cyan-600' }
+};
+
+let currentLearnCategory = 'all';
+let completedMaterials = new Set();
+
+// DATA APPLIKASI & STATE
+let userData = {
+    name: 'Dzulfaiq',
+    age: 17,
+    gender: 'Laki-laki',
+    status: 'Pelajar / Mahasiswa',
+    moodScore: 72,
+    moodRisk: 'Risiko Sedang'
+};
+
+const quizQuestions = [
+    "Saya merasa tenang dan santai dalam beberapa hari terakhir.",
+    "Saya memiliki energi yang cukup untuk melakukan aktivitas harian.",
+    "Saya merasa puas dengan pencapaian atau usaha saya baru-baru ini.",
+    "Saya bisa tidur dengan nyenyak tanpa pikiran mengganggu.",
+    "Saya mudah merasa cemas atau khawatir berlebihan.",
+    "Saya merasa memiliki teman atau orang yang mau mendengarkan saya.",
+    "Saya bisa fokus mengerjakan tugas tanpa gampang terdistraksi.",
+    "Saya merasa optimistis menghadapi masa depan."
+];
+
+let quizAnswers = new Array(quizQuestions.length).fill(null);
+
+// INITALIZATION
+document.addEventListener('DOMContentLoaded', () => {
+    lucide.createIcons();
+    renderQuiz();
+    renderLearnCategories();
+    renderMaterials();
+    renderChatSuggestionChips();
+
+    // Cek localStorage jika ada data tersimpan
+    const savedProfile = localStorage.getItem('vitalera_user');
+    if (savedProfile) {
+        userData = JSON.parse(savedProfile);
+        document.getElementById('welcome-modal').classList.add('hidden');
+        updateUIProfile();
+    }
+
+    const savedCompleted = localStorage.getItem('vitalera_completed_materials');
+    if (savedCompleted) {
+        completedMaterials = new Set(JSON.parse(savedCompleted));
+        updateCompletedCount();
+    }
+});
+
+// ONBOARDING & PROFILE MANAGEMENT
+function saveProfile(e) {
+    e.preventDefault();
+    userData.name = document.getElementById('user-name-input').value || 'Teman';
+    userData.age = document.getElementById('user-age-input').value || 17;
+    userData.gender = document.getElementById('user-gender-input').value;
+    userData.status = document.getElementById('user-status-input').value;
+
+    localStorage.setItem('vitalera_user', JSON.stringify(userData));
+    document.getElementById('welcome-modal').classList.add('hidden');
+    updateUIProfile();
+}
+
+function updateUIProfile() {
+    document.getElementById('display-name').innerText = userData.name;
+    document.getElementById('card-user-name').innerText = userData.name;
+    document.getElementById('card-user-meta').innerText = `${userData.age} Tahun • ${userData.status}`;
+    document.getElementById('card-avatar').innerText = userData.name.charAt(0).toUpperCase();
+
+    document.getElementById('mood-score').innerText = userData.moodScore;
+    document.getElementById('mood-risk').innerText = userData.moodRisk;
+    document.getElementById('check-score').innerText = userData.moodScore;
+    document.getElementById('check-risk').innerText = userData.moodRisk;
+    document.getElementById('check-progress').style.width = userData.moodScore + '%';
+    document.getElementById('card-score').innerText = userData.moodScore;
+    document.getElementById('card-risk').innerText = userData.moodRisk;
+}
+
+// NAVIGATION SYSTEM
+function navigate(pageId) {
+    document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+    const targetPage = document.getElementById(`page-${pageId}`);
+    if (targetPage) targetPage.classList.add('active');
+
+    // Mobile Nav Active State
+    document.querySelectorAll('.mobile-bottom-nav .nav-item').forEach(el => el.classList.remove('active'));
+    const activeMNav = document.getElementById(`m-nav-${pageId}`);
+    if (activeMNav) activeMNav.classList.add('active');
+
+    // Desktop Sidebar Active State
+    document.querySelectorAll('.desktop-sidebar .sidebar-item').forEach(el => el.classList.remove('active'));
+    const activeSNav = document.getElementById(`s-nav-${pageId}`);
+    if (activeSNav) activeSNav.classList.add('active');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// MOOD SELECTOR (HOME)
+function selectMood(btn, moodName, score) {
+    document.querySelectorAll('.mood-button').forEach(el => el.classList.remove('selected'));
+    btn.classList.add('selected');
+
+    userData.moodScore = score;
+    if (score >= 80) userData.moodRisk = 'Risiko Rendah (Sehat)';
+    else if (score >= 50) userData.moodRisk = 'Risiko Sedang';
+    else userData.moodRisk = 'Risiko Tinggi (Butuh Perhatian)';
+
+    updateUIProfile();
+}
+
+// QUIZ SYSTEM (VITA CHECK)
+function renderQuiz() {
+    const container = document.getElementById('quiz-container');
+    if (!container) return;
+
+    container.innerHTML = quizQuestions.map((q, idx) => `
+        <div id="quiz-q-${idx}" class="quiz-question border border-gray-100 rounded-2xl p-4 transition">
+            <div class="text-xs font-semibold text-gray-700">${idx + 1}. ${q}</div>
+            <div class="flex items-center justify-between mt-3 max-w-xs">
+                <span class="text-[10px] text-gray-400">Tidak Jarang</span>
+                <div class="flex gap-2">
+                    ${[1, 2, 3, 4, 5].map(num => `
+                        <button onclick="setQuizAnswer(${idx}, ${num})" class="quiz-scale-btn q-btn-${idx}" data-val="${num}">${num}</button>
+                    `).join('')}
+                </div>
+                <span class="text-[10px] text-gray-400">Sangat Sering</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+function setQuizAnswer(qIdx, val) {
+    quizAnswers[qIdx] = val;
+    document.querySelectorAll(`.q-btn-${qIdx}`).forEach(btn => {
+        if (parseInt(btn.getAttribute('data-val')) === val) {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
+    document.getElementById(`quiz-q-${qIdx}`).classList.add('answered');
+    document.getElementById('quiz-warning').classList.add('hidden');
+}
+
+function calculateQuiz() {
+    if (quizAnswers.includes(null)) {
+        document.getElementById('quiz-warning').classList.remove('hidden');
+        return;
+    }
+
+    const total = quizAnswers.reduce((a, b) => a + b, 0);
+    const maxScore = quizQuestions.length * 5;
+    const calculatedScore = Math.round((total / maxScore) * 100);
+
+    userData.moodScore = calculatedScore;
+    if (calculatedScore >= 75) {
+        userData.moodRisk = 'Risiko Rendah';
+        document.getElementById('crisis-box').classList.add('hidden');
+    } else if (calculatedScore >= 45) {
+        userData.moodRisk = 'Risiko Sedang';
+        document.getElementById('crisis-box').classList.add('hidden');
+    } else {
+        userData.moodRisk = 'Risiko Tinggi';
+        document.getElementById('crisis-box').classList.remove('hidden');
+    }
+
+    updateUIProfile();
+    alert(`Refleksi selesai! Skor kamu adalah ${calculatedScore}/100 (${userData.moodRisk})`);
+}
+
+// VITA BUDDY CHAT SYSTEM — template-based, menjawab dari 50 materi GenRe di Vita Learn
+const chatStopwords = new Set(['yang','adalah','apa','itu','ini','saya','aku','kamu','gimana','bagaimana',
+    'kenapa','kok','sih','dong','ya','dan','atau','tentang','cara','apakah','bisa','tolong','min','kak',
+    'dengan','untuk','dari','pada','ke','di','ada','tidak','gak','nggak','apa itu','jelasin','jelaskan',
+    'mengapa','apa sih','dampak','penyebab','solusi','contoh','maksud','artinya','arti'
+]);
+
+const crisisKeywords = ['bunuh diri','ingin mati','mengakhiri hidup','menyakiti diri','melukai diri',
+    'self harm','tidak ingin hidup','pengen mati','capek hidup','nyerah hidup'];
+
+function tokenizeChat(text) {
+    return text.toLowerCase()
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length >= 3 && !chatStopwords.has(w));
+}
+
+function findBestMaterial(userText) {
+    const lower = userText.toLowerCase();
+    const tokens = tokenizeChat(userText);
+    if (tokens.length === 0) return null;
+
+    let best = null;
+    let bestScore = 0;
+
+    genreMaterials.forEach((m, idx) => {
+        const titleLower = m.title.toLowerCase();
+        const bodyText = [...m.penjelasan, ...m.penyebab, ...m.dampak, ...m.solusi].join(' ').toLowerCase();
+        let score = 0;
+
+        // Cocokkan judul secara utuh (bobot tinggi)
+        if (lower.includes(titleLower) || titleLower.includes(lower.trim())) score += 10;
+
+        tokens.forEach(tok => {
+            if (titleLower.includes(tok)) score += 4;
+            if (bodyText.includes(tok)) score += 1;
+        });
+
+        if (score > bestScore) {
+            bestScore = score;
+            best = idx;
+        }
+    });
+
+    return bestScore >= 4 ? best : null;
+}
+
+function handleChatKeyPress(e) {
+    if (e.key === 'Enter') sendMessage();
+}
+
+function appendBotMessage(html) {
+    const chatContainer = document.getElementById('chat-messages');
+    const botHTML = `
+        <div class="chat-message flex gap-3 max-w-[90%]">
+            <div class="w-8 h-8 rounded-full bg-vital-100 text-vital-700 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="bot" class="w-4 h-4"></i>
+            </div>
+            <div class="bg-vital-50 border border-vital-100 text-gray-700 rounded-2xl rounded-tl-none p-3.5 text-xs leading-relaxed shadow-sm space-y-2">
+                ${html}
+            </div>
+        </div>
+    `;
+    chatContainer.insertAdjacentHTML('beforeend', botHTML);
+    lucide.createIcons();
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+function buildMaterialAnswerHTML(idx) {
+    const m = genreMaterials[idx];
+    const meta = categoryMeta[m.cat];
+    return `
+        <p class="font-bold text-vital-800">${m.title}</p>
+        <p>${m.penjelasan.join(' ')}</p>
+        <p><span class="font-semibold text-amber-600">Penyebab:</span> ${m.penyebab.join(' ')}</p>
+        <p><span class="font-semibold text-red-500">Dampak:</span> ${m.dampak.join(' ')}</p>
+        <p><span class="font-semibold text-emerald-600">Solusi:</span> ${m.solusi.join(' ')}</p>
+        <button onclick="navigate('learn'); openMaterialModal(${idx});" class="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-vital-700 hover:underline">
+            <i data-lucide="book-open" class="w-3 h-3"></i> Buka materi lengkap "${m.title}" di Vita Learn
+        </button>
+    `;
+}
+
+function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const chatContainer = document.getElementById('chat-messages');
+
+    // Render User Message
+    const userMsgHTML = `
+        <div class="chat-message flex justify-end">
+            <div class="bg-vital-700 text-white rounded-2xl rounded-tr-none p-3.5 text-xs leading-relaxed max-w-[85%] shadow-sm">
+                ${escapeHTML(text)}
+            </div>
+        </div>
+    `;
+    chatContainer.insertAdjacentHTML('beforeend', userMsgHTML);
+    input.value = '';
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    // Render Bot Loading Skeleton
+    const loadingId = 'loading-' + Date.now();
+    const botLoadingHTML = `
+        <div id="${loadingId}" class="chat-message flex gap-3 max-w-[85%]">
+            <div class="w-8 h-8 rounded-full bg-vital-100 text-vital-700 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="bot" class="w-4 h-4"></i>
+            </div>
+            <div class="bg-vital-50 border border-vital-100 text-gray-500 rounded-2xl rounded-tl-none p-3.5 text-xs flex items-center gap-2">
+                <span class="animate-pulse-slow font-medium">Vita Buddy sedang mengetik...</span>
+            </div>
+        </div>
+    `;
+    chatContainer.insertAdjacentHTML('beforeend', botLoadingHTML);
+    lucide.createIcons();
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+
+    // Cek kata kunci krisis dulu — prioritas keselamatan
+    const lowerText = text.toLowerCase();
+    const isCrisis = crisisKeywords.some(kw => lowerText.includes(kw));
+
+    setTimeout(() => {
+        const loadingEl = document.getElementById(loadingId);
+        if (loadingEl) loadingEl.remove();
+
+        if (isCrisis) {
+            appendBotMessage(`
+                <p>Aku dengar kamu sedang berat banget saat ini, ${escapeHTML(userData.name)}. Kamu tidak sendirian, dan penting untuk bicara dengan orang yang bisa membantu segera.</p>
+                <button onclick="navigate('care')" class="mt-1 inline-flex items-center gap-1 bg-red-600 text-white text-[11px] font-semibold px-3 py-2 rounded-lg hover:bg-red-700">
+                    <i data-lucide="heart-handshake" class="w-3.5 h-3.5"></i> Buka Vita Care sekarang
+                </button>
+            `);
+            return;
+        }
+
+        const matchIdx = findBestMaterial(text);
+        if (matchIdx !== null) {
+            appendBotMessage(buildMaterialAnswerHTML(matchIdx));
+        } else {
+            appendBotMessage(`
+                <p>Hmm, aku belum nemu materi yang cocok persis dengan pertanyaanmu. Coba tanya pakai kata kunci topik GenRe, misalnya:</p>
+                <p class="text-vital-700 font-medium">"apa itu NAPZA?", "kenapa remaja overthinking?", "dampak pernikahan dini", "cara atasi stres"</p>
+                <button onclick="navigate('learn')" class="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-vital-700 hover:underline">
+                    <i data-lucide="book-open" class="w-3 h-3"></i> Jelajahi semua materi di Vita Learn
+                </button>
+            `);
+        }
+    }, 900);
+}
+
+function renderChatSuggestionChips() {
+    const wrap = document.getElementById('chat-suggestion-chips');
+    if (!wrap) return;
+    const topics = ['NAPZA', 'HIV/AIDS', 'Pernikahan Dini', 'Overthinking', 'Cyberbullying', 'Pubertas', 'Anemia Remaja'];
+    wrap.innerHTML = topics.map(t => `
+        <button onclick="askSuggested('${t.replace(/'/g, "\\'")}')" class="flex-shrink-0 px-3 py-1.5 rounded-full bg-vital-50 text-vital-700 text-[11px] font-medium border border-vital-100 hover:bg-vital-100 transition">${t}</button>
+    `).join('');
+}
+
+function askSuggested(topic) {
+    const input = document.getElementById('chat-input');
+    input.value = `Apa itu ${topic}?`;
+    sendMessage();
+}
+
+function resetChat() {
+    document.getElementById('chat-messages').innerHTML = `
+        <div class="chat-message flex gap-3 max-w-[85%]">
+            <div class="w-8 h-8 rounded-full bg-vital-100 text-vital-700 flex items-center justify-center flex-shrink-0">
+                <i data-lucide="bot" class="w-4 h-4"></i>
+            </div>
+            <div class="bg-vital-50 border border-vital-100 text-gray-700 rounded-2xl rounded-tl-none p-3.5 text-xs leading-relaxed shadow-sm">
+                Halo! Aku Vita Buddy. Tanya aja seputar topik GenRe — misalnya NAPZA, HIV/AIDS, pubertas, stres, atau pernikahan dini — nanti aku bantu jelaskan berdasarkan materi di Vita Learn. 😊
+            </div>
+        </div>
+    `;
+    lucide.createIcons();
+}
+
+/* =========================================================
+   VITA LEARN — RENDER, FILTER, & MODAL (SEMUA MATERI TERBUKA)
+   ========================================================= */
+
+function renderLearnCategories() {
+    const wrap = document.getElementById('learn-categories');
+    const cats = ['all', ...Object.keys(categoryMeta).filter(c => c !== 'all')];
+    wrap.innerHTML = cats.map(catKey => {
+        const meta = categoryMeta[catKey];
+        const isActive = catKey === currentLearnCategory;
+        const activeClasses = isActive
+            ? `${colorClasses[meta.color].activeBg} text-white`
+            : 'bg-gray-100 text-gray-600';
+        return `
+            <button onclick="filterCategory('${catKey}', this)" data-cat="${catKey}"
+                class="category-btn flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-xs whitespace-nowrap transition ${activeClasses}">
+                <i data-lucide="${meta.icon}" class="w-3.5 h-3.5"></i>${meta.label}
+            </button>
+        `;
+    }).join('');
+    lucide.createIcons();
+}
+
+function materialCardHTML(material, index) {
+    const meta = categoryMeta[material.cat];
+    const colors = colorClasses[meta.color];
+    const isDone = completedMaterials.has(index);
+    return `
+        <article class="material-card border border-gray-100 rounded-2xl p-5 bg-white flex flex-col justify-between" data-index="${index}" data-category="${material.cat}" data-title="${material.title.toLowerCase()}">
+            <div>
+                <div class="flex items-start justify-between">
+                    <div class="w-12 h-12 rounded-xl ${colors.bg} ${colors.text} flex items-center justify-center mb-4">
+                        <i data-lucide="${meta.icon}" class="w-6 h-6"></i>
+                    </div>
+                    ${isDone ? '<i data-lucide="badge-check" class="w-5 h-5 text-vital-500"></i>' : ''}
+                </div>
+                <div class="text-[10px] font-bold ${colors.text} uppercase tracking-wider">${meta.label}</div>
+                <h3 class="font-bold text-base mt-1">${material.title}</h3>
+                <p class="text-xs text-gray-500 mt-2 leading-relaxed">${material.penjelasan[0]}</p>
+            </div>
+            <div class="flex items-center justify-between mt-6 pt-4 border-t border-gray-50">
+                <span class="text-[10px] text-gray-400 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i>${material.time}</span>
+                <button onclick="openMaterialModal(${index})" class="text-xs font-semibold ${colors.text} hover:underline">Buka Materi →</button>
+            </div>
+        </article>
+    `;
+}
+
+function renderMaterials() {
+    const container = document.getElementById('materials');
+    container.innerHTML = genreMaterials.map((m, idx) => materialCardHTML(m, idx)).join('');
+    lucide.createIcons();
+    document.getElementById('learn-count').innerText = genreMaterials.length;
+    filterMaterials();
+}
+
+// SEARCH & FILTER (VITA LEARN)
+function filterMaterials() {
+    const query = document.getElementById('learn-search').value.toLowerCase().trim();
+    let visibleCount = 0;
+
+    document.querySelectorAll('.material-card').forEach(card => {
+        const title = card.getAttribute('data-title');
+        const cat = card.getAttribute('data-category');
+        const matchesQuery = !query || title.includes(query);
+        const matchesCategory = currentLearnCategory === 'all' || cat === currentLearnCategory;
+
+        if (matchesQuery && matchesCategory) {
+            card.style.display = 'flex';
+            visibleCount++;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    const noResultBox = document.getElementById('no-result-box');
+    const materialsGrid = document.getElementById('materials');
+    if (visibleCount === 0) {
+        noResultBox.style.display = 'flex';
+        materialsGrid.style.display = 'none';
+    } else {
+        noResultBox.style.display = 'none';
+        materialsGrid.style.display = 'grid';
+    }
+}
+
+function filterCategory(cat, btn) {
+    currentLearnCategory = cat;
+    renderLearnCategories();
+    filterMaterials();
+}
+
+function buildSectionHTML(iconName, colorText, label, items) {
+    return `
+        <div>
+            <div class="lm-section-title ${colorText} flex items-center gap-1.5 mb-2">
+                <i data-lucide="${iconName}" class="w-3.5 h-3.5"></i>${label}
+            </div>
+            <ul class="space-y-1.5 list-disc pl-4 marker:text-gray-300">
+                ${items.map(it => `<li>${it}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+}
+
+function openMaterialModal(index) {
+    const material = genreMaterials[index];
+    const meta = categoryMeta[material.cat];
+    const colors = colorClasses[meta.color];
+
+    document.getElementById('modal-material-badge').innerText = meta.label;
+    document.getElementById('modal-material-badge').className = `inline-block text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full mb-2 ${colors.bg} ${colors.text}`;
+    document.getElementById('modal-material-title').innerText = material.title;
+    document.getElementById('modal-material-time').innerHTML = `<i data-lucide="clock" class="inline w-3 h-3 align-[-1px]"></i> Estimasi baca: ${material.time}`;
+
+    const body = document.getElementById('learn-modal-body');
+    body.innerHTML = [
+        buildSectionHTML('info', 'text-vital-700', 'Penjelasan', material.penjelasan),
+        buildSectionHTML('help-circle', 'text-amber-600', 'Penyebab', material.penyebab),
+        buildSectionHTML('triangle-alert', 'text-red-500', 'Dampak', material.dampak),
+        buildSectionHTML('lightbulb', 'text-emerald-600', 'Solusi', material.solusi)
+    ].join('');
+
+    document.getElementById('material-modal').classList.remove('hidden');
+    lucide.createIcons();
+
+    // Tandai materi sebagai sudah dibuka/selesai dibaca — tersedia untuk semua pengguna tanpa batasan
+    completedMaterials.add(index);
+    localStorage.setItem('vitalera_completed_materials', JSON.stringify([...completedMaterials]));
+    updateCompletedCount();
+}
+
+function closeMaterialModal() {
+    document.getElementById('material-modal').classList.add('hidden');
+    renderMaterials(); // refresh badge "sudah dibaca" pada card
+}
+
+function updateCompletedCount() {
+    const el = document.getElementById('card-materials-done');
+    if (el) el.innerText = `${completedMaterials.size} dari ${genreMaterials.length} Modul`;
+}
+
+function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g,
+        tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag] || tag)
+    );
+}
+</script>
+
+</body>
+</html>
